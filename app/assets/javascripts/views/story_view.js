@@ -22,6 +22,8 @@ import storyTemplate from 'templates/story.ejs';
 import alertTemplate from 'templates/alert.ejs';
 import storyHoverTemplate from 'templates/story_hover.ejs';
 import noteTemplate from 'templates/note.ejs';
+import changeCase from 'change-object-case';
+import axios from 'axios';
 
 const LOCAL_STORY_REGEXP = /(?!\s|\b)(#\d+)(?!\w)/g;
 
@@ -255,11 +257,30 @@ const StoryView = FormView.extend({
     this.$el.appendTo(this.model.get('column'));
   },
 
+  setStoryDetailRequest: function() {
+    const shouldRequest = !this.model.attributes.isFetched;
+    if (shouldRequest) {
+      this.fetchStoryDetails();
+    }
+  },
+
   startEdit: function(e) {
     if (this.eventShouldExpandStory(e)) {
       this.model.set({editing: true, editingDescription: false, clickFromSearchResult: this.$el.hasClass('searchResult')});
+      this.setStoryDetailRequest();
       this.removeHoverbox();
+      this.render();
     }
+  },
+
+  fetchStoryDetails: function () {
+    return axios
+      .get(`/projects/${this.model.collection.project.id}/stories/${this.model.id}`)
+      .then(({ data }) => changeCase.camelKeys(data, { recursive: true, arrayRecursive: true }))
+      .then(({ story }) => {
+        this.model.set(story)
+        this.model.set({ isFetched: true })
+      })
   },
 
   openEpic: function(e) {
