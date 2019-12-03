@@ -119,8 +119,6 @@ GEM
     cloudinary (1.1.7)
       aws_cf_signer
       rest-client
-    codeclimate-test-reporter (1.0.9)
-      simplecov (<= 0.13)
     coderay (1.1.2)
     coercible (1.0.0)
       descendants_tracker (~> 0.0.1)
@@ -151,6 +149,12 @@ GEM
     configuration (1.3.4)
     connection_pool (2.2.2)
     cookiejar (0.3.3)
+    coveralls (0.7.1)
+      multi_json (~> 1.3)
+      rest-client
+      simplecov (>= 0.7)
+      term-ansicolor
+      thor
     crack (0.4.3)
       safe_yaml (~> 1.0.0)
     crass (1.0.4)
@@ -511,6 +515,8 @@ GEM
       actionpack (>= 4.0)
       activesupport (>= 4.0)
       sprockets (>= 3.0.0)
+    term-ansicolor (1.7.1)
+      tins (~> 1.0)
     thin (1.7.2)
       daemons (~> 1.0, >= 1.0.9)
       eventmachine (~> 1.0, >= 1.0.4)
@@ -519,6 +525,7 @@ GEM
     thread_safe (0.3.6)
     tilt (2.0.9)
     timecop (0.9.1)
+    tins (1.22.2)
     transitions (0.1.13)
     tzinfo (1.2.5)
       thread_safe (~> 0.1)
@@ -571,10 +578,10 @@ DEPENDENCIES
   chartkick
   chronic
   cloudinary
-  codeclimate-test-reporter
   coffee-rails
   compass-rails
   configuration
+  coveralls
   dalli
   database_cleaner
   devise
