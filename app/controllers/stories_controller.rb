@@ -114,7 +114,6 @@ class StoriesController < ApplicationController
   end
 
   def set_project
-    policy_scope(Project)
-    @project = @current_user.projects.friendly.find(params[:project_id])
+    @project ||= policy_scope(Project).friendly.find(params[:project_id])
   end
 end

@@ -33,14 +33,20 @@ class ProjectPolicy < ApplicationPolicy
   alias ownership? share?
 
   class Scope < Scope
+    def permitted_project_ids
+      teams_projects_ids = current_user.teams.map(&:projects).flatten.pluck(:id)
+      user_projects_ids  = current_user.projects.pluck(:id)
+      teams_projects_ids | user_projects_ids
+    end
+
     def resolve
       if root?
         Project.all
       elsif admin?
-        current_team.projects
+        Project.where(id: permitted_project_ids)
       else
         return Project.none unless current_team
-        current_user.projects.not_archived.where(id: current_team.projects.pluck(:id))
+        current_user.projects.not_archived
       end
     end
   end

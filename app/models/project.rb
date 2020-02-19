@@ -93,6 +93,7 @@ class Project < ApplicationRecord
 
   scope :joinable, -> { where(disallow_join: false) }
   scope :joinable_except, ->(project_ids) { joinable.where.not(id: project_ids) }
+  scope :joined_by_team, ->(team) { joins(:teams).preload(:tag_group).where(teams: { id: team }) }
 
   accepts_nested_attributes_for :users, reject_if: :all_blank
   # These are the valid point scales for a project. These represent
@@ -100,7 +101,7 @@ class Project < ApplicationRecord
 
   validates :point_scale, inclusion: { in: POINT_SCALES.keys,
                                        message: '%{value} is not a valid estimation scheme' }
-  
+
   validates :iteration_length,
     numericality: { greater_than_or_equal_to: ITERATION_LENGTH_RANGE.min,
                     less_than_or_equal_to: ITERATION_LENGTH_RANGE.max, only_integer: true,
@@ -121,6 +122,8 @@ class Project < ApplicationRecord
   def csv_filename
     "#{name}-#{Time.current.strftime('%Y%m%d_%I%M')}.csv"
   end
+
+  scope :joined_by_team, ->(team) { joins(:teams).preload(:tag_group).where(teams: { id: team }) }
 
   def last_changeset_id
     changesets.last&.id

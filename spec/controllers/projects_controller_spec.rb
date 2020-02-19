@@ -174,19 +174,30 @@ describe ProjectsController do
         end
 
         describe '#show' do
+          let(:invalid_project) { -1 }
           context 'as html' do
             specify do
-              get :show, params: {id: project.id }
+              get :show, params: { id: project.id }
+
               expect(response).to be_successful
               expect(assigns[:project]).to eq(project)
               expect(assigns[:story].new_record?).to be_truthy
               expect(assigns[:story].project).to eq(project)
+            end
+
+            context 'when the project does not exists' do
+              it 'should not be successful' do
+                get :show, params: { id: invalid_project }
+
+                expect(response).not_to be_successful
+              end
             end
           end
 
           context 'as json' do
             specify do
               get :show, xhr: true, params: { id: project.id }
+
               expect(response).to be_successful
               expect(assigns[:project]).to eq(project)
               expect(assigns[:story].new_record?).to be_truthy
@@ -197,11 +208,17 @@ describe ProjectsController do
           describe 'when the user change to another project from another team' do
             let(:new_team)              { create :team }
             let(:new_project)           { create :project, users: [user] }
-            let!(:new_team_projects)    { new_team.projects << new_project }
             let(:second_team)           { create :team }
             let(:second_project)        { create :project, users: [user] }
-            let!(:second_team_projects) { second_team.projects << second_project }
-            let!(:user_add_teams)       { user.teams << [new_team, second_team] }
+            let(:third_team)            { create :team }
+            let(:third_project)         { create :project, users: [create(:user)] }
+
+            before do
+              new_team.projects << new_project
+              second_team.projects << second_project
+              user.teams << [new_team, second_team]
+              third_team.projects << third_project
+            end
 
             it 'should accept request when it is from registred team', :aggregate_failures do
               get :show, params: { id: new_project }
@@ -210,7 +227,7 @@ describe ProjectsController do
               expect(response).to have_http_status(:ok)
             end
 
-            it 'should change session when change most oneteams', :aggregate_failures do
+            it 'should change session when change most one teams', :aggregate_failures do
               get :show, params: { id: new_project }
 
               expect(session[:current_team_slug]).to eq(new_team.slug)
@@ -220,6 +237,32 @@ describe ProjectsController do
 
               expect(session[:current_team_slug]).to eq(second_team.slug)
               expect(response).to have_http_status(:ok)
+            end
+
+            it 'should redirect when not is from the team', :aggregate_failures do
+              get :show, params: { id: new_project }
+
+              expect(session[:current_team_slug]).to eq(new_team.slug)
+              expect(response).to have_http_status(:ok)
+
+              get :show, params: { id: third_project }
+              expect(session[:current_team_slug]).to eq(new_team.slug)
+              expect(response).to have_http_status(:found)
+            end
+
+            describe 'admin can access any project from your team' do
+              let(:empty_project) { create :project }
+
+              before do
+                team.projects << empty_project
+              end
+
+              specify do
+                get :show, params: { id: empty_project }
+
+                expect(session[:current_team_slug]).to eq(team.slug)
+                expect(response).to have_http_status(:ok)
+              end
             end
           end
         end

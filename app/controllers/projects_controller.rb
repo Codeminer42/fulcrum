@@ -12,7 +12,7 @@ class ProjectsController < ApplicationController
   def index
     @projects = {}
 
-    projects_joined = policy_scope(Project).preload(:tag_group)
+    projects_joined = policy_scope(Project).joined_by_team(current_team)
 
     @projects = {
       joined: serialize_from_collection(projects_joined)
@@ -30,6 +30,7 @@ class ProjectsController < ApplicationController
   def show
     @story = @project.stories.build
     update_current_team
+
     respond_to do |format|
       format.html # show.html.erb
       format.js   { render json: @project }
@@ -245,7 +246,10 @@ class ProjectsController < ApplicationController
   end
 
   def set_project
-    @project = current_user.projects.friendly.find(params[:id])
+    @project =  policy_scope(Project)
+                .friendly
+                .find(params[:id])
+
     authorize @project
   end
 
