@@ -20,6 +20,7 @@ import ExpandedStoryAttachments from '../ExpandedStoryAttachments';
 import ExpandedStoryTask from '../ExpandedStoryTask';
 import ExpandedStoryRequestedBy from '../ExpandedStoryRequestedBy';
 import ExpandedStoryOwnedBy from '../ExpandedStoryOwnedBy';
+import ExpandedStoryAcceptedBy from "../ExpandedStoryAcceptedBy";
 
 export const ExpandedStoryDefault = ({
   titleRef,
@@ -76,6 +77,8 @@ export const ExpandedStoryDefault = ({
       onEdit={(requestedById) => onEdit({ requestedById })}
       disabled={disabled}
     />
+
+    <ExpandedStoryAcceptedBy story={story} />
 
     <ExpandedStoryOwnedBy
       story={story}

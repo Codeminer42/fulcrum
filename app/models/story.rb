@@ -106,7 +106,7 @@ has_attachments :documents,
     state position id labels new_position
   ].freeze
 
-  JSON_METHODS = %w[errors notes documents tasks].freeze
+  JSON_METHODS = %w[errors notes documents tasks accepted_by_name].freeze
 
   CSV_HEADERS = [
     "Id", "Story", "Labels", "Iteration", "Iteration Start", "Iteration End",
@@ -184,6 +184,19 @@ has_attachments :documents,
     else
       '#in_progress'
     end
+  end
+
+  def accepted_by_name
+    Activity.by_story(self).order(updated_at: :desc).each do |activity|
+      activity.subject_changes.each do |subject, change|
+        _, to = change
+
+        if subject == 'state' && to == 'accepted' && User.exists?(activity.user_id)
+          return User.find(activity.user_id).name
+        end
+      end
+    end
+    nil
   end
 
   def stakeholders_users
